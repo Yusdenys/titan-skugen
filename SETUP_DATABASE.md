@@ -53,7 +53,6 @@ CREATE TABLE scissors (
     serial_number VARCHAR(50) UNIQUE NOT NULL,
     type_of_shears VARCHAR(20) NOT NULL,
     segment VARCHAR(50) NOT NULL,
-    edge VARCHAR(50) NOT NULL,
     size VARCHAR(20) NOT NULL,
     number_of_teeth INTEGER,
     color VARCHAR(10) NOT NULL,

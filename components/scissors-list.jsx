@@ -45,6 +45,7 @@ import { useToast } from "@/hooks/use-toast";
 export function ScissorsList() {
   const [scissors, setScissors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dbConfigured, setDbConfigured] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterSegment, setFilterSegment] = useState("all");
@@ -65,13 +66,19 @@ export function ScissorsList() {
       
       if (data.success) {
         setScissors(data.data);
+        setDbConfigured(true);
       } else {
         throw new Error(data.error);
       }
     } catch (error) {
       console.error('Error fetching scissors:', error);
-      // No mostrar toast si es error de conexión a BD (esperado si no está configurada)
-      if (!error.message.includes('ECONNREFUSED')) {
+      
+      // Verificar si es error de conexión a BD
+      if (error.message.includes('ECONNREFUSED') || error.message.includes('password authentication failed')) {
+        setDbConfigured(false);
+        setScissors([]);
+      } else {
+        // Otros errores
         toast({
           title: "Error Loading Data",
           description: error.message,
@@ -127,7 +134,7 @@ export function ScissorsList() {
     }
 
     const headers = [
-      "ID", "Serial Number", "Type of Shears", "SKU", "Segment", "Edge", "Size", 
+      "ID", "Serial Number", "Type of Shears", "SKU", "Segment", "Size", 
       "Number of Teeth", "Color", "Created At"
     ];
     
@@ -139,7 +146,6 @@ export function ScissorsList() {
         scissor.type_of_shears || "N/A",
         scissor.sku,
         scissor.segment,
-        scissor.edge,
         scissor.size,
         scissor.number_of_teeth || "N/A",
         scissor.color,
@@ -198,7 +204,7 @@ export function ScissorsList() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="font-light">Scissors Database</CardTitle>
+            <CardTitle className="font-semibold text-blue-900 dark:text-blue-100">Scissors Database</CardTitle>
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
@@ -305,7 +311,7 @@ export function ScissorsList() {
           {/* Table */}
           {loading ? (
             <div className="text-center py-8">Loading scissors...</div>
-          ) : scissors.length === 0 ? (
+          ) : !dbConfigured ? (
             <div className="p-6 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
               <div className="flex items-start gap-3">
                 <div className="text-yellow-600 dark:text-yellow-400">
@@ -316,11 +322,32 @@ export function ScissorsList() {
                     Database Not Configured
                   </h3>
                   <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
-                    No scissors found. This could mean:
+                    PostgreSQL is not configured yet. Please:
                   </p>
                   <ul className="text-sm text-yellow-800 dark:text-yellow-200 list-disc list-inside space-y-1">
-                    <li>PostgreSQL is not configured yet (see <code className="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">SETUP_DATABASE.md</code>)</li>
-                    <li>You haven't created any scissors yet (go to "Define Product")</li>
+                    <li>Follow the instructions in <code className="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">SETUP_DATABASE.md</code></li>
+                    <li>Make sure PostgreSQL is running</li>
+                    <li>Verify your database credentials</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ) : scissors.length === 0 ? (
+            <div className="p-6 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="text-blue-600 dark:text-blue-400">
+                  <Database className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                    No Scissors Found
+                  </h3>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                    Your database is connected but empty. Get started by:
+                  </p>
+                  <ul className="text-sm text-blue-800 dark:text-blue-200 list-disc list-inside space-y-1">
+                    <li>Going to "Define Product" to create your first scissor</li>
+                    <li>Using the form to generate SKUs and Serial Numbers</li>
                   </ul>
                 </div>
               </div>
@@ -338,7 +365,6 @@ export function ScissorsList() {
                     <TableHead>Type</TableHead>
                     <TableHead>SKU</TableHead>
                     <TableHead>Segment</TableHead>
-                    <TableHead>Series</TableHead>
                     <TableHead>Size</TableHead>
                     <TableHead>Teeth</TableHead>
                     <TableHead>Color</TableHead>
@@ -365,7 +391,6 @@ export function ScissorsList() {
                         {scissor.sku}
                       </TableCell>
                       <TableCell className="capitalize">{scissor.segment}</TableCell>
-                      <TableCell>{scissor.series}</TableCell>
                       <TableCell>{scissor.size}"</TableCell>
                       <TableCell>
                         {scissor.number_of_teeth ? `${scissor.number_of_teeth}T` : "N/A"}

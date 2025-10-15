@@ -38,9 +38,9 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const {
       sku,
+      serialNumber,
+      typeOfShears,
       segment,
-      edge,
-      series,
       size,
       numberOfTeeth,
       color,
@@ -51,9 +51,9 @@ export async function PUT(request, { params }) {
       UPDATE scissors 
       SET 
         sku = $1,
-        segment = $2,
-        edge = $3,
-        series = $4,
+        serial_number = $2,
+        type_of_shears = $3,
+        segment = $4,
         size = $5,
         number_of_teeth = $6,
         color = $7,
@@ -65,9 +65,9 @@ export async function PUT(request, { params }) {
 
     const values = [
       sku,
+      serialNumber,
+      typeOfShears,
       segment,
-      edge,
-      series,
       size,
       numberOfTeeth || null,
       color,

@@ -78,7 +78,6 @@ CREATE TABLE scissors (
     serial_number VARCHAR(50) UNIQUE NOT NULL,
     type_of_shears VARCHAR(20) NOT NULL,
     segment VARCHAR(50) NOT NULL,
-    edge VARCHAR(50) NOT NULL,
     size VARCHAR(20) NOT NULL,
     number_of_teeth INTEGER,
     color VARCHAR(10) NOT NULL,
@@ -144,36 +143,35 @@ npm run dev
    Tijeras son consideradas idénticas si tienen los mismos valores en:
    - Type of Shears
    - Segment
-   - Edge
    - Size
    - Color
    
-   **NOTA:** El campo Series fue eliminado y reemplazado por el número de grupo del Serial Number
+   **NOTA:** Los campos Series y Edge fueron eliminados. El número de grupo del Serial Number identifica combinaciones únicas.
 
 ### **Ejemplo:**
 
 ```
-Tijera 1: Grooming, Thinning, Convex, 5.5", RD
+Tijera 1: Grooming, Thinning, 5.5", RD
 Serial: G1-001 (Grupo 1 de Grooming, primera tijera)
 SKU: TG155RD
 
-Tijera 2: Grooming, Thinning, Convex, 5.5", RD (IDÉNTICA)
+Tijera 2: Grooming, Thinning, 5.5", RD (IDÉNTICA)
 Serial: G1-002 (Grupo 1 de Grooming, segunda tijera)
 SKU: TG155RD
 
-Tijera 3: Grooming, Thinning, Convex, 6", RD (DIFERENTE tamaño)
+Tijera 3: Grooming, Thinning, 6", RD (DIFERENTE tamaño)
 Serial: G2-001 (Grupo 2 de Grooming porque el tamaño cambió)
 SKU: TG26RD
 
-Tijera 4: Grooming, Straight, Convex, 5.5", RD (DIFERENTE segmento)
+Tijera 4: Grooming, Straight, 5.5", RD (DIFERENTE segmento)
 Serial: G3-001 (Grupo 3 de Grooming porque el segmento cambió)
 SKU: SG355RD
 
-Tijera 5: Beauty, Thinning, Convex, 5.5", RD (DIFERENTE tipo)
+Tijera 5: Beauty, Thinning, 5.5", RD (DIFERENTE tipo)
 Serial: B1-001 (Grupo 1 de Beauty, los grupos son independientes por tipo)
 SKU: TB155RD
 
-Tijera 6: Grooming, Thinning, Convex, 5.5", RD (IDÉNTICA a tijera 1)
+Tijera 6: Grooming, Thinning, 5.5", RD (IDÉNTICA a tijera 1)
 Serial: G1-003 (Grupo 1 de Grooming, tercera tijera)
 SKU: TG155RD
 ```

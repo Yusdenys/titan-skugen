@@ -23,6 +23,7 @@ export function ScissorsDashboard() {
     avgTeeth: 0
   });
   const [loading, setLoading] = useState(true);
+  const [dbConfigured, setDbConfigured] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export function ScissorsDashboard() {
       
       if (data.success) {
         const scissors = data.data;
+        setDbConfigured(true);
         
         // Calcular estadísticas
         const byType = scissors.reduce((acc, s) => {
@@ -82,8 +84,21 @@ export function ScissorsDashboard() {
       }
     } catch (error) {
       console.error('Error fetching statistics:', error);
-      // No mostrar toast si es error de conexión a BD (esperado si no está configurada)
-      if (!error.message.includes('ECONNREFUSED')) {
+      
+      // Verificar si es error de conexión a BD
+      if (error.message.includes('ECONNREFUSED') || error.message.includes('password authentication failed')) {
+        setDbConfigured(false);
+        setStats({
+          total: 0,
+          byType: {},
+          bySegment: {},
+          byColor: {},
+          bySize: {},
+          recentScissors: [],
+          avgTeeth: 0
+        });
+      } else {
+        // Otros errores
         toast({
           title: "Error Loading Statistics",
           description: error.message,
@@ -127,7 +142,7 @@ export function ScissorsDashboard() {
       </div>
 
       {/* Database Not Configured Warning */}
-      {!loading && stats.total === 0 && (
+      {!loading && !dbConfigured && (
         <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
@@ -143,12 +158,38 @@ export function ScissorsDashboard() {
                 </p>
                 <ol className="text-sm text-yellow-800 dark:text-yellow-200 list-decimal list-inside space-y-1">
                   <li>Follow instructions in <code className="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">SETUP_DATABASE.md</code></li>
-                  <li>Create <code className="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">.env.local</code> with your database credentials</li>
-                  <li>Restart the application</li>
+                  <li>Make sure PostgreSQL is running</li>
+                  <li>Verify your database credentials</li>
                 </ol>
                 <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-3">
                   You can still use "Define Product" to generate SKUs without database persistence.
                 </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Database Connected but Empty */}
+      {!loading && dbConfigured && stats.total === 0 && (
+        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <div className="text-blue-600 dark:text-blue-400">
+                <Package className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  Database Connected
+                </h3>
+                <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                  Your database is connected but empty. Get started by:
+                </p>
+                <ul className="text-sm text-blue-800 dark:text-blue-200 list-disc list-inside space-y-1">
+                  <li>Going to "Define Product" to create your first scissor</li>
+                  <li>Using the form to generate SKUs and Serial Numbers</li>
+                  <li>Come back here to see your statistics</li>
+                </ul>
               </div>
             </div>
           </CardContent>

@@ -45,7 +45,6 @@ export async function POST(request) {
       serialNumber,
       typeOfShears,
       segment,
-      edge,
       size,
       numberOfTeeth,
       color,
@@ -53,7 +52,7 @@ export async function POST(request) {
     } = body;
 
     // Validar campos requeridos
-    if (!sku || !serialNumber || !typeOfShears || !segment || !edge || !size || !color) {
+    if (!sku || !serialNumber || !typeOfShears || !segment || !size || !color) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -70,8 +69,8 @@ export async function POST(request) {
 
     const insertQuery = `
       INSERT INTO scissors (
-        sku, serial_number, type_of_shears, segment, edge, size, number_of_teeth, color, color_name
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        sku, serial_number, type_of_shears, segment, size, number_of_teeth, color, color_name
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
 
@@ -80,7 +79,6 @@ export async function POST(request) {
       serialNumber,
       typeOfShears,
       segment,
-      edge,
       size,
       numberOfTeeth || null,
       color,

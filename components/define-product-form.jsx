@@ -13,12 +13,12 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ProductCard } from "./product-card";
 
 export function DefineProductForm() {
   const [formData, setFormData] = useState({
     typeOfShears: "",
     segment: "",
-    edge: "",
     size: "",
     numberOfTeeth: "",
     color: "",
@@ -42,14 +42,14 @@ export function DefineProductForm() {
     });
     
     // Generar número de serie cuando cambien campos relevantes
-    if (['typeOfShears', 'segment', 'edge', 'size', 'color'].includes(field)) {
+    if (['typeOfShears', 'segment', 'size', 'color'].includes(field)) {
       generateSerialNumber({ ...formData, [field]: value });
     }
   };
 
   const generateSerialNumber = async (data) => {
     // Solo generar si todos los campos necesarios están completos
-    if (!data.typeOfShears || !data.segment || !data.edge || !data.size || !data.color) {
+    if (!data.typeOfShears || !data.segment || !data.size || !data.color) {
       setSerialNumber("");
       return;
     }
@@ -69,18 +69,18 @@ export function DefineProductForm() {
           s.type_of_shears === data.typeOfShears
         );
         
-        // Crear un mapa de combinaciones únicas (sin series)
+        // Crear un mapa de combinaciones únicas (sin edge y sin series)
         const uniqueCombinations = new Map();
         sameTypeScissors.forEach(s => {
-          const key = `${s.segment}_${s.edge}_${s.size}_${s.color}`;
+          const key = `${s.segment}_${s.size}_${s.color}`;
           if (!uniqueCombinations.has(key)) {
             uniqueCombinations.set(key, []);
           }
           uniqueCombinations.get(key).push(s);
         });
         
-        // Buscar la combinación actual (sin series)
-        const currentKey = `${data.segment}_${data.edge}_${data.size}_${data.color}`;
+        // Buscar la combinación actual (sin edge y sin series)
+        const currentKey = `${data.segment}_${data.size}_${data.color}`;
         
         // Si esta combinación ya existe, obtener su grupo
         if (uniqueCombinations.has(currentKey)) {
@@ -159,7 +159,7 @@ export function DefineProductForm() {
     e.preventDefault();
     
     // Validar campos básicos
-    if (!formData.typeOfShears || !formData.segment || !formData.edge || !formData.size || !formData.color) {
+    if (!formData.typeOfShears || !formData.segment || !formData.size || !formData.color) {
       toast({
         title: "Validation Error",
         description: "Please fill in all fields before submitting.",
@@ -192,7 +192,6 @@ export function DefineProductForm() {
           serialNumber,
           typeOfShears: formData.typeOfShears,
           segment: formData.segment,
-          edge: formData.edge,
           size: formData.size,
           numberOfTeeth: formData.numberOfTeeth || null,
           color: formData.color,
@@ -234,7 +233,6 @@ export function DefineProductForm() {
     setFormData({
       typeOfShears: "",
       segment: "",
-      edge: "",
       size: "",
       numberOfTeeth: "",
       color: "",
@@ -246,7 +244,6 @@ export function DefineProductForm() {
     setFormData({
       typeOfShears: "",
       segment: "",
-      edge: "",
       size: "",
       numberOfTeeth: "",
       color: "",
@@ -255,11 +252,13 @@ export function DefineProductForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-light">Define Product</CardTitle>
-        </CardHeader>
+    <div className="max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Define Product Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-light">Define Product</CardTitle>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -299,23 +298,21 @@ export function DefineProductForm() {
                 </Select>
               </div>
 
-              {/* Edge Field */}
-              <div className="space-y-2">
-                <Label htmlFor="edge">Edge</Label>
-                <Select
-                  value={formData.edge}
-                  onValueChange={(value) => handleInputChange("edge", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select edge" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="convex">Convex</SelectItem>
-                    <SelectItem value="beveling">Beveling</SelectItem>
-                    <SelectItem value="microserrated">Microserrated</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Number of Teeth Field - Al lado de Segment, solo visible para Thinning y Blending */}
+              {(formData.segment === 'thinning' || formData.segment === 'blending') && (
+                <div className="space-y-2">
+                  <Label htmlFor="numberOfTeeth">Number of teeth</Label>
+                  <Input
+                    id="numberOfTeeth"
+                    type="number"
+                    value={formData.numberOfTeeth}
+                    onChange={(e) => handleInputChange("numberOfTeeth", e.target.value)}
+                    placeholder="Enter number of teeth"
+                    min="1"
+                    step="1"
+                  />
+                </div>
+              )}
 
               {/* Size Field */}
               <div className="space-y-2">
@@ -344,22 +341,6 @@ export function DefineProductForm() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Number of Teeth Field - Solo visible para Thinning y Blending */}
-              {(formData.segment === 'thinning' || formData.segment === 'blending') && (
-                <div className="space-y-2">
-                  <Label htmlFor="numberOfTeeth">Number of teeth</Label>
-                  <Input
-                    id="numberOfTeeth"
-                    type="number"
-                    value={formData.numberOfTeeth}
-                    onChange={(e) => handleInputChange("numberOfTeeth", e.target.value)}
-                    placeholder="Enter number of teeth"
-                    min="1"
-                    step="1"
-                  />
-                </div>
-              )}
 
               {/* Color Field */}
               <div className="space-y-2 md:col-span-2">
@@ -467,23 +448,19 @@ export function DefineProductForm() {
             </div>
           )}
 
-          {/* Preview Section */}
-          {Object.values(formData).some(value => value !== "") && (
-            <div className="mt-4 p-4 bg-muted rounded-lg">
-              <h4 className="font-medium mb-2">Product Details:</h4>
-              <div className="text-sm space-y-1">
-                {formData.typeOfShears && <p><strong>Type of Shears:</strong> <span className="capitalize">{formData.typeOfShears}</span></p>}
-                {serialNumber && <p><strong>Serial Number:</strong> {serialNumber}</p>}
-                {formData.segment && <p><strong>Segment:</strong> <span className="capitalize">{formData.segment}</span></p>}
-                {formData.edge && <p><strong>Edge:</strong> <span className="capitalize">{formData.edge}</span></p>}
-                {formData.size && <p><strong>Size:</strong> {formData.size}"</p>}
-                {formData.numberOfTeeth && <p><strong>Number of teeth:</strong> {formData.numberOfTeeth}T</p>}
-                {formData.color && <p><strong>Color:</strong> {formData.color}</p>}
-              </div>
-            </div>
-          )}
         </CardContent>
-      </Card>
+        </Card>
+
+        {/* Product Card */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold tracking-tight">Product</h2>
+          <ProductCard 
+            productData={formData}
+            serialNumber={serialNumber}
+            sku={Object.values(formData).some(value => value !== "") ? generateSku() : ""}
+          />
+        </div>
+      </div>
     </div>
   );
 }

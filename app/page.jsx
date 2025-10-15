@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ProductTab } from "@/components/product-tab";
-import { DefineProductForm } from "@/components/define-product-form";
+import { DefineProductPage } from "@/components/define-product-page";
 import { ScissorsList } from "@/components/scissors-list";
 import { ScissorsDashboard } from "@/components/scissors-dashboard";
 import { Sidebar } from "@/components/sidebar";
@@ -60,7 +60,7 @@ export default function Home() {
           {activeView === 'dashboard' ? (
             <ScissorsDashboard />
           ) : activeView === 'define' ? (
-            <DefineProductForm />
+            <DefineProductPage />
           ) : activeView === 'list' ? (
             <ScissorsList />
           ) : activeProduct ? (
